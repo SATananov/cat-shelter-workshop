@@ -19,6 +19,15 @@ function writeJson(filePath, data) {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
+function escapeHtml(value) {
+    return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
 function parseBody(req, callback) {
     let body = '';
 
@@ -91,12 +100,52 @@ function getUploadedFile(fileValue) {
     return fileValue;
 }
 
-function getBreedOptions() {
+function getBreedOptions(selectedBreed = '') {
     const breeds = readJson(breedsPath);
 
     return breeds
-        .map((breed) => `<option value="${breed}">${breed}</option>`)
+        .map((breed) => {
+            const selected = breed === selectedBreed ? ' selected' : '';
+            return `<option value="${escapeHtml(breed)}"${selected}>${escapeHtml(breed)}</option>`;
+        })
         .join('\n');
+}
+
+function getCatId(pathname, prefix) {
+    return pathname.replace(prefix, '').replace('/', '').trim();
+}
+
+function handleCatForm(req, res, callback) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+
+    const form = new formidable.IncomingForm({
+        uploadDir: imagesDir,
+        keepExtensions: true,
+        multiples: false,
+    });
+
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+            res.writeHead(500, {
+                'Content-Type': 'text/plain',
+            });
+
+            res.write('Upload error');
+            res.end();
+            return;
+        }
+
+        const uploadedFile = getUploadedFile(files.upload);
+
+        let uploadedImage = '';
+
+        if (uploadedFile && uploadedFile.size > 0) {
+            const imageFileName = path.basename(uploadedFile.filepath || uploadedFile.path);
+            uploadedImage = `/content/images/${imageFileName}`;
+        }
+
+        callback(fields, uploadedImage);
+    });
 }
 
 module.exports = (req, res) => {
@@ -142,40 +191,14 @@ module.exports = (req, res) => {
     }
 
     if (req.pathname === '/cats/add-cat' && req.method === 'POST') {
-        fs.mkdirSync(imagesDir, { recursive: true });
-
-        const form = new formidable.IncomingForm({
-            uploadDir: imagesDir,
-            keepExtensions: true,
-            multiples: false,
-        });
-
-        form.parse(req, (err, fields, files) => {
-            if (err) {
-                res.writeHead(500, {
-                    'Content-Type': 'text/plain',
-                });
-
-                res.write('Upload error');
-                res.end();
-                return;
-            }
-
+        handleCatForm(req, res, (fields, uploadedImage) => {
             const cats = readJson(catsPath);
-            const uploadedFile = getUploadedFile(files.upload);
-
-            let image = 'https://cdn.pixabay.com/photo/2015/06/19/14/20/cat-814952_1280.jpg';
-
-            if (uploadedFile && uploadedFile.size > 0) {
-                const imageFileName = path.basename(uploadedFile.filepath || uploadedFile.path);
-                image = `/content/images/${imageFileName}`;
-            }
 
             const newCat = {
                 id: Date.now().toString(),
                 name: getFieldValue(fields.name).trim(),
                 description: getFieldValue(fields.description).trim(),
-                image,
+                image: uploadedImage || 'https://cdn.pixabay.com/photo/2015/06/19/14/20/cat-814952_1280.jpg',
                 breed: getFieldValue(fields.breed).trim(),
             };
 
@@ -186,6 +209,84 @@ module.exports = (req, res) => {
 
             redirect(res, '/');
         });
+
+        return false;
+    }
+
+    if (req.pathname.startsWith('/cats/edit/') && req.method === 'GET') {
+        const catId = getCatId(req.pathname, '/cats/edit/');
+        const cats = readJson(catsPath);
+        const cat = cats.find((currentCat) => currentCat.id === catId);
+
+        if (!cat) {
+            redirect(res, '/');
+            return false;
+        }
+
+        renderView(res, 'editCat.html', {
+            '{{catId}}': escapeHtml(cat.id),
+            '{{catName}}': escapeHtml(cat.name),
+            '{{catDescription}}': escapeHtml(cat.description),
+            '{{catImage}}': escapeHtml(cat.image),
+            '{{catBreeds}}': getBreedOptions(cat.breed),
+        });
+
+        return false;
+    }
+
+    if (req.pathname.startsWith('/cats/edit/') && req.method === 'POST') {
+        const catId = getCatId(req.pathname, '/cats/edit/');
+
+        handleCatForm(req, res, (fields, uploadedImage) => {
+            const cats = readJson(catsPath);
+            const catIndex = cats.findIndex((currentCat) => currentCat.id === catId);
+
+            if (catIndex !== -1) {
+                cats[catIndex] = {
+                    ...cats[catIndex],
+                    name: getFieldValue(fields.name).trim(),
+                    description: getFieldValue(fields.description).trim(),
+                    breed: getFieldValue(fields.breed).trim(),
+                    image: uploadedImage || cats[catIndex].image,
+                };
+
+                writeJson(catsPath, cats);
+            }
+
+            redirect(res, '/');
+        });
+
+        return false;
+    }
+
+    if (req.pathname.startsWith('/cats/shelter/') && req.method === 'GET') {
+        const catId = getCatId(req.pathname, '/cats/shelter/');
+        const cats = readJson(catsPath);
+        const cat = cats.find((currentCat) => currentCat.id === catId);
+
+        if (!cat) {
+            redirect(res, '/');
+            return false;
+        }
+
+        renderView(res, 'catShelter.html', {
+            '{{catId}}': escapeHtml(cat.id),
+            '{{catName}}': escapeHtml(cat.name),
+            '{{catDescription}}': escapeHtml(cat.description),
+            '{{catImage}}': escapeHtml(cat.image),
+            '{{catBreed}}': escapeHtml(cat.breed),
+        });
+
+        return false;
+    }
+
+    if (req.pathname.startsWith('/cats/shelter/') && req.method === 'POST') {
+        const catId = getCatId(req.pathname, '/cats/shelter/');
+        const cats = readJson(catsPath);
+        const filteredCats = cats.filter((currentCat) => currentCat.id !== catId);
+
+        writeJson(catsPath, filteredCats);
+        redirect(res, '/');
 
         return false;
     }

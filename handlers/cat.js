@@ -28,6 +28,34 @@ function escapeHtml(value) {
         .replaceAll("'", '&#039;');
 }
 
+function getFieldValue(value) {
+    if (Array.isArray(value)) {
+        return value[0] || '';
+    }
+
+    return value || '';
+}
+
+function getUploadedFile(fileValue) {
+    if (Array.isArray(fileValue)) {
+        return fileValue[0];
+    }
+
+    return fileValue;
+}
+
+function getCatId(pathname, prefix) {
+    return pathname.substring(prefix.length).split('/')[0].trim();
+}
+
+function redirect(res, location) {
+    res.writeHead(302, {
+        Location: location,
+    });
+
+    res.end();
+}
+
 function parseBody(req, callback) {
     let body = '';
 
@@ -76,30 +104,6 @@ function renderView(res, viewPath, replacements = {}) {
     });
 }
 
-function redirect(res, location) {
-    res.writeHead(302, {
-        Location: location,
-    });
-
-    res.end();
-}
-
-function getFieldValue(value) {
-    if (Array.isArray(value)) {
-        return value[0] || '';
-    }
-
-    return value || '';
-}
-
-function getUploadedFile(fileValue) {
-    if (Array.isArray(fileValue)) {
-        return fileValue[0];
-    }
-
-    return fileValue;
-}
-
 function getBreedOptions(selectedBreed = '') {
     const breeds = readJson(breedsPath);
 
@@ -111,11 +115,7 @@ function getBreedOptions(selectedBreed = '') {
         .join('\n');
 }
 
-function getCatId(pathname, prefix) {
-    return pathname.replace(prefix, '').replace('/', '').trim();
-}
-
-function handleCatForm(req, res, callback) {
+function parseCatForm(req, res, callback) {
     fs.mkdirSync(imagesDir, { recursive: true });
 
     const form = new formidable.IncomingForm({
@@ -135,7 +135,7 @@ function handleCatForm(req, res, callback) {
             return;
         }
 
-        const uploadedFile = getUploadedFile(files.upload);
+        const uploadedFile = getUploadedFile(files.upload || files.image);
 
         let uploadedImage = '';
 
@@ -149,8 +149,8 @@ function handleCatForm(req, res, callback) {
 }
 
 module.exports = (req, res) => {
-    const baseUrl = `http://${req.headers.host}`;
-    req.pathname = req.pathname || new URL(req.url, baseUrl).pathname;
+    const currentUrl = new URL(req.url, `http://${req.headers.host}`);
+    req.pathname = req.pathname || currentUrl.pathname;
 
     if (req.pathname === '/cats/add-breed' && req.method === 'GET') {
         renderView(res, 'addBreed.html');
@@ -170,13 +170,13 @@ module.exports = (req, res) => {
             if (breedName) {
                 const breeds = readJson(breedsPath);
 
-                if (!breeds.includes(breedName)) {
+                if (!breeds.some((breed) => breed.toLowerCase() === breedName.toLowerCase())) {
                     breeds.push(breedName);
                     writeJson(breedsPath, breeds);
                 }
             }
 
-            redirect(res, '/');
+            redirect(res, '/cats/add-cat');
         });
 
         return false;
@@ -191,7 +191,7 @@ module.exports = (req, res) => {
     }
 
     if (req.pathname === '/cats/add-cat' && req.method === 'POST') {
-        handleCatForm(req, res, (fields, uploadedImage) => {
+        parseCatForm(req, res, (fields, uploadedImage) => {
             const cats = readJson(catsPath);
 
             const newCat = {
@@ -237,17 +237,19 @@ module.exports = (req, res) => {
     if (req.pathname.startsWith('/cats/edit/') && req.method === 'POST') {
         const catId = getCatId(req.pathname, '/cats/edit/');
 
-        handleCatForm(req, res, (fields, uploadedImage) => {
+        parseCatForm(req, res, (fields, uploadedImage) => {
             const cats = readJson(catsPath);
             const catIndex = cats.findIndex((currentCat) => currentCat.id === catId);
 
             if (catIndex !== -1) {
+                const currentCat = cats[catIndex];
+
                 cats[catIndex] = {
-                    ...cats[catIndex],
-                    name: getFieldValue(fields.name).trim(),
-                    description: getFieldValue(fields.description).trim(),
-                    breed: getFieldValue(fields.breed).trim(),
-                    image: uploadedImage || cats[catIndex].image,
+                    ...currentCat,
+                    name: getFieldValue(fields.name).trim() || currentCat.name,
+                    description: getFieldValue(fields.description).trim() || currentCat.description,
+                    breed: getFieldValue(fields.breed).trim() || currentCat.breed,
+                    image: uploadedImage || currentCat.image,
                 };
 
                 writeJson(catsPath, cats);
@@ -293,4 +295,3 @@ module.exports = (req, res) => {
 
     return true;
 };
-

@@ -8,7 +8,7 @@ const imagesDir = path.join(__dirname, '..', 'content', 'images');
 
 function readJson(filePath) {
     try {
-        const data = fs.readFileSync(filePath, 'utf8');
+        const data = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '').trim();
         return JSON.parse(data || '[]');
     } catch (err) {
         return [];
@@ -293,3 +293,4 @@ module.exports = (req, res) => {
 
     return true;
 };
+

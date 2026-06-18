@@ -223,96 +223,6 @@ body > form > label:nth-child(3) {
 
 
 
-/* Cat card layout polish */
-.cats > ul {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: stretch;
-    gap: 42px 64px;
-    max-width: 1320px;
-    margin: 80px auto 0 auto;
-    padding: 0;
-}
-
-.cats > ul > li {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 360px;
-    width: 360px;
-    min-height: 500px;
-    margin: 0;
-    overflow: hidden;
-}
-
-.cats > ul > li > img {
-    width: 100%;
-    height: 230px;
-    object-fit: cover;
-    display: block;
-}
-
-.cats > ul > li > h3 {
-    text-align: center;
-    margin: 12px 18px 8px 18px;
-}
-
-.cats > ul > li > p {
-    margin: 0 18px 8px 18px;
-}
-
-.cats > ul > li > p:last-of-type {
-    flex: 1;
-}
-
-.cats ul li .buttons {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 26px;
-    margin: auto 0 24px 0;
-    padding: 0;
-    position: static;
-    left: auto;
-    border: none;
-}
-
-.cats ul li .buttons li {
-    width: auto;
-    min-height: auto;
-    margin: 0;
-    padding: 0;
-    background-color: transparent;
-    border-radius: 0;
-    list-style: none;
-    overflow: visible;
-    display: block;
-}
-
-.cats ul li .buttons .btn a {
-    display: inline-block;
-    min-width: 86px;
-    padding: 7px 13px;
-    border-radius: 18px;
-    text-align: center;
-    text-decoration: none;
-    color: #fff;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.cats ul li .buttons .edit a {
-    background-color: #3d99e3;
-}
-
-.cats ul li .buttons .delete a {
-    background-color: #ff1f1f;
-}
-/* End cat card layout polish */
-
-
-
 /* Final form polish */
 form[action="/cats/add-breed"],
 form[action="/cats/add-cat"] {
@@ -515,3 +425,159 @@ form[action^="/cats/edit/"] button {
     font-weight: 700;
 }
 /* End edit cat form polish */
+
+
+/* Cat card layout polish */
+.cats {
+    width: 100%;
+}
+
+.cats > ul {
+    display: grid !important;
+    grid-template-columns: repeat(3, 360px) !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    gap: 42px 58px !important;
+    max-width: 1320px !important;
+    margin: 80px auto 0 auto !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.cats > ul > li {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 360px !important;
+    min-width: 360px !important;
+    max-width: 360px !important;
+    min-height: 500px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+}
+
+.cats > ul > li > img {
+    width: 360px !important;
+    height: 230px !important;
+    object-fit: cover !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cats > ul > li > h3 {
+    text-align: center !important;
+    margin: 14px 18px 10px 18px !important;
+    font-size: 22px !important;
+    line-height: 1.2 !important;
+}
+
+.cats > ul > li > p {
+    margin: 0 20px 8px 20px !important;
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+}
+
+.cats > ul > li > p:last-of-type {
+    flex: 1 !important;
+}
+
+.cats > ul > li > p span {
+    font-weight: 700 !important;
+}
+
+.cats ul li .buttons {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 24px !important;
+    margin: auto 0 24px 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    left: auto !important;
+    border: none !important;
+    list-style: none !important;
+}
+
+.cats ul li .buttons li {
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    list-style: none !important;
+    overflow: visible !important;
+    display: block !important;
+}
+
+.cats ul li .buttons .btn a {
+    display: inline-block !important;
+    min-width: 92px !important;
+    padding: 8px 13px !important;
+    border-radius: 18px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+.cats ul li .buttons .edit a {
+    background-color: #3d99e3 !important;
+}
+
+.cats ul li .buttons .delete a {
+    background-color: #ff2a2a !important;
+}
+
+@media (max-width: 1200px) {
+    .cats > ul {
+        grid-template-columns: repeat(2, 360px) !important;
+    }
+}
+
+@media (max-width: 820px) {
+    .cats > ul {
+        grid-template-columns: 360px !important;
+    }
+}
+/* End cat card layout polish */
+
+/* Cat grid centering fix */
+.cats {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+.cats > ul {
+    width: 1196px !important;
+    max-width: calc(100vw - 96px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    justify-content: center !important;
+}
+
+@media (max-width: 1200px) {
+    .cats > ul {
+        width: 778px !important;
+        max-width: calc(100vw - 48px) !important;
+    }
+}
+
+@media (max-width: 820px) {
+    .cats > ul {
+        width: 360px !important;
+        max-width: calc(100vw - 32px) !important;
+    }
+}
+/* End cat grid centering fix */

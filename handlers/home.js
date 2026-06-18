@@ -5,7 +5,7 @@ const catsPath = path.join(__dirname, '..', 'data', 'cats.json');
 
 function readJson(filePath) {
     try {
-        const data = fs.readFileSync(filePath, 'utf8');
+        const data = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '').trim();
         return JSON.parse(data || '[]');
     } catch (err) {
         return [];
@@ -13,7 +13,7 @@ function readJson(filePath) {
 }
 
 function escapeHtml(value) {
-    return String(value)
+    return String(value || '')
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
@@ -23,7 +23,7 @@ function escapeHtml(value) {
 
 function renderCats(cats) {
     if (cats.length === 0) {
-        return '<p class="empty-message">No cats in the shelter yet.</p>';
+        return '<p class="empty-message">No cats found.</p>';
     }
 
     return cats.map((cat) => `
@@ -40,11 +40,25 @@ function renderCats(cats) {
     `).join('\n');
 }
 
-module.exports = (req, res) => {
-    const baseUrl = `http://${req.headers.host}`;
-    req.pathname = req.pathname || new URL(req.url, baseUrl).pathname;
+function filterCats(cats, query) {
+    const search = query.toLowerCase().trim();
 
-    if (req.pathname === '/' && req.method === 'GET') {
+    if (!search) {
+        return cats;
+    }
+
+    return cats.filter((cat) => {
+        return cat.name.toLowerCase().includes(search)
+            || cat.breed.toLowerCase().includes(search)
+            || cat.description.toLowerCase().includes(search);
+    });
+}
+
+module.exports = (req, res) => {
+    const currentUrl = new URL(req.url, `http://${req.headers.host}`);
+    req.pathname = req.pathname || currentUrl.pathname;
+
+    if ((req.pathname === '/' || req.pathname === '/search') && req.method === 'GET') {
         const filePath = path.normalize(
             path.join(__dirname, '../views/home/index.html')
         );
@@ -60,10 +74,13 @@ module.exports = (req, res) => {
                 return;
             }
 
+            const searchQuery = currentUrl.searchParams.get('search') || '';
             const cats = readJson(catsPath);
-            const catsHtml = renderCats(cats);
+            const filteredCats = filterCats(cats, searchQuery);
+            const catsHtml = renderCats(filteredCats);
 
             data = data.replace('{{cats}}', catsHtml);
+            data = data.replace('{{searchValue}}', escapeHtml(searchQuery));
 
             res.writeHead(200, {
                 'Content-Type': 'text/html',
@@ -78,3 +95,4 @@ module.exports = (req, res) => {
 
     return true;
 };
+

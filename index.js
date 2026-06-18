@@ -1,14 +1,28 @@
-const http = require('http');
+﻿const http = require('http');
+const handlers = require('./handlers');
 
 const PORT = 3001;
 
 const server = http.createServer((req, res) => {
-    res.writeHead(200, {
-        'Content-Type': 'text/plain',
-    });
+    let isHandled = false;
 
-    res.write('Cat Shelter server is running!');
-    res.end();
+    for (const handler of handlers) {
+        const next = handler(req, res);
+
+        if (!next) {
+            isHandled = true;
+            break;
+        }
+    }
+
+    if (!isHandled) {
+        res.writeHead(404, {
+            'Content-Type': 'text/plain',
+        });
+
+        res.write('404 Not Found');
+        res.end();
+    }
 });
 
 server.listen(PORT, () => {

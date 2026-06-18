@@ -26,14 +26,28 @@ function getContentType(pathname) {
         return 'image/jpeg';
     }
 
+    if (pathname.endsWith('.webp')) {
+        return 'image/webp';
+    }
+
+    if (pathname.endsWith('.gif')) {
+        return 'image/gif';
+    }
+
+    if (pathname.endsWith('.svg')) {
+        return 'image/svg+xml';
+    }
+
     return 'text/plain';
 }
 
-function isImage(pathname) {
+function isBinaryFile(pathname) {
     return pathname.endsWith('.png')
         || pathname.endsWith('.jpg')
         || pathname.endsWith('.jpeg')
-        || pathname.endsWith('.ico');
+        || pathname.endsWith('.ico')
+        || pathname.endsWith('.webp')
+        || pathname.endsWith('.gif');
 }
 
 module.exports = (req, res) => {
@@ -46,7 +60,7 @@ module.exports = (req, res) => {
         );
 
         const contentType = getContentType(req.pathname);
-        const encoding = isImage(req.pathname) ? null : 'utf8';
+        const encoding = isBinaryFile(req.pathname) ? null : 'utf8';
 
         fs.readFile(filePath, encoding, (err, data) => {
             if (err) {

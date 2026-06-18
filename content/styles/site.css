@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Lato:400,700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css?family=Lato:400,700&display=swap');
 
 * {
     margin: 0;
@@ -220,3 +220,93 @@ body > form > label:nth-child(3) {
     background-color: lightskyblue;
     margin-bottom: 1.5rem;
 }
+
+
+
+/* Cat card layout polish */
+.cats > ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 42px 64px;
+    max-width: 1320px;
+    margin: 80px auto 0 auto;
+    padding: 0;
+}
+
+.cats > ul > li {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 360px;
+    width: 360px;
+    min-height: 500px;
+    margin: 0;
+    overflow: hidden;
+}
+
+.cats > ul > li > img {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+    display: block;
+}
+
+.cats > ul > li > h3 {
+    text-align: center;
+    margin: 12px 18px 8px 18px;
+}
+
+.cats > ul > li > p {
+    margin: 0 18px 8px 18px;
+}
+
+.cats > ul > li > p:last-of-type {
+    flex: 1;
+}
+
+.cats ul li .buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 26px;
+    margin: auto 0 24px 0;
+    padding: 0;
+    position: static;
+    left: auto;
+    border: none;
+}
+
+.cats ul li .buttons li {
+    width: auto;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    list-style: none;
+    overflow: visible;
+    display: block;
+}
+
+.cats ul li .buttons .btn a {
+    display: inline-block;
+    min-width: 86px;
+    padding: 7px 13px;
+    border-radius: 18px;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.cats ul li .buttons .edit a {
+    background-color: #3d99e3;
+}
+
+.cats ul li .buttons .delete a {
+    background-color: #ff1f1f;
+}
+/* End cat card layout polish */

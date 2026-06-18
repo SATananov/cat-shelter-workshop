@@ -54,6 +54,20 @@ cat-shelter-workshop/
 └── README.md
 ```
 
+## Covered Workshop Topics
+
+This project covers the main topics from the JS Back-End workshop:
+
+- Introduction to Node.js: the application uses a custom Node.js HTTP server.
+- Modules: the code is split into separate handler modules.
+- Request and Response Wrapper: the project works directly with req and res objects.
+- Node.js Web Server Streams: form data is handled through request events and file uploads.
+- Streams: file upload handling is implemented with Formidable.
+- Pub/Sub Pattern: the project uses Node.js event-based request handling.
+- Events: request body parsing uses data and end events.
+- FS Module: HTML views, JSON data, and uploaded files are handled through the file system.
+- Debugging: the project was tested through browser checks, route checks, JSON validation, and Git checkpoints.
+
 ## Development Steps
 
 1. Initialized the Node.js project with `npm init`.
@@ -122,3 +136,4 @@ content/images/
 ```
 
 The project was developed step by step as part of the JS Back-End workshop.
+
